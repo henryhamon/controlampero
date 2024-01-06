@@ -13,7 +13,7 @@ This project builds a powerful MIDI Foot Controller specifically designed for co
 
 ## Required Hardware:
 
-* Arduino Mega
+* Esp32 DoIt DevKit V1
 * 10 Foot switches
 * 8 OLED displays
 Additional components (resistors, capacitors, wires)
@@ -43,13 +43,13 @@ Join the project forum or online community to share your experiences, discuss mo
 
 ## Electronics Description:
 
-At the heart of this MIDI Foot Controller lies an Arduino Mega 2560 microcontroller, expertly orchestrating communication between various components. 
+At the heart of this MIDI Foot Controller lies an Esp32 microcontroller, expertly orchestrating communication between various components. 
 It seamlessly handles user input from 10 foot switches, drives the informative OLED displays, and precisely dispatches MIDI messages to the AMPERO II STOMP, ensuring flawless control over your sonic landscapes. 
-While currently utilizing the Arduino Mega, future iterations may explore the ESP8266's expanded capabilities, unlocking even greater potential for wireless connectivity and expanded features.
+While currently utilizing the ESP32.
 
 Components:
 
-- Arduino Mega 2560: Processes user input from foot switches and controls the OLED displays and Bluetooth communication.
+- Esp32 DoIt DevKit V1: Processes user input from foot switches and controls the OLED displays.
 - Foot switches: 10 momentary switches for selecting presets, activating STOMPS, and other functions.
 - OLED displays: 8 individual displays (compatible with SSD1306 library) showcase patch names, effect details, and parameter values.
 - Additional components: Resistors, capacitors, and wires provide electrical connections between all components.
