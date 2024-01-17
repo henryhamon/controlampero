@@ -1,80 +1,37 @@
 #include <ezButton.h>
 
-ezButton btnA(13);
-ezButton btnB(12);
-ezButton btnC(14);
-ezButton btnD(27);
-ezButton btnE(26);
-ezButton btnF(25);
-ezButton btnG(33);
-ezButton btnH(32);
-ezButton btnDown(35);
-ezButton btnUp(34);
+#define NUM_BUTTONS 10
+#define EFX_BUTTONS 8
+#define NUM_LEDS 8
+
+// Effect Buttons A..H -> 12..33
+// btnDown and btnUp 34..35
+//                     A   B   C   D   E   F   G   H   Dow  UP
+ezButton buttons[] = { 12, 13, 14, 25, 26, 27, 32, 33, 34, 35 };
+bool buttonStates[EFX_BUTTONS] = {false};
+
+void onButtonPressed(int idxBtn) {
+  if (idxBtn < EFX_BUTTONS) {
+    buttonStates[idxBtn] = !buttonStates[idxBtn];
+    //updateLED(buttonIndex);
+  }
+}
 
 void footSetup() {
-  btnA.setDebounceTime(50);
-  btnB.setDebounceTime(50);
-  btnC.setDebounceTime(50);
-  btnD.setDebounceTime(50);
+  for (int i = 0; i < NUM_BUTTONS; i++) {
+    buttons[i].setDebounceTime(50);
+  }
 
-  btnE.setDebounceTime(50);
-  btnF.setDebounceTime(50);
-  btnG.setDebounceTime(50);
-  btnH.setDebounceTime(50);
-  
-  btnUp.setDebounceTime(50);
-  btnDown.setDebounceTime(50);
 }
 
 void footEvent() {
-  btnUp.loop();
-  btnDown.loop();
-  btnA.loop();
-  btnB.loop();
-  btnC.loop();
-  btnD.loop();
-  btnE.loop();
-  btnF.loop();
-  btnG.loop();
-  btnH.loop();
-
-  if (btnUp.isPressed()) {
-    Serial.println("Up is pressed");
-  }
-  
-  if (btnDown.isPressed()) {
-    Serial.println("Down is pressed");
+  for (int i = 0; i < NUM_BUTTONS; i++) {
+    buttons[i].loop();
+    
+    if (buttons[i].isPressed()) {
+      Serial.println("Btn is pressed");
+      onButtonPressed(i);
+    }
   }
 
-  if (btnA.isPressed()) {
-    Serial.println("A is pressed");
-  }
-  
-  if (btnB.isPressed()) {
-    Serial.println("B is pressed");
-  }
-  
-  if (btnC.isPressed()) {
-    Serial.println("C is pressed");
-  }
-  
-  if (btnD.isPressed()) {
-    Serial.println("D is pressed");
-  }
-  
-  if (btnE.isPressed()) {
-    Serial.println("E is pressed");
-  }
-  
-  if (btnF.isPressed()) {
-    Serial.println("F is pressed");
-  }
-  
-  if (btnG.isPressed()) {
-    Serial.println("G is pressed");
-  }
-  
-  if (btnH.isPressed()) {
-    Serial.println("H is pressed");
-  }
 }
