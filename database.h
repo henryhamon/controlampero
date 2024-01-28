@@ -1,29 +1,45 @@
 #include <Preferences.h>
 #include <SQLite_ESP32.h>
 #include <unordered_map>
+#include "commons.h"
 
 SQLite db;
 Preferences preferences;
 
 /*
-* Example: Populate PatchUpdate struct dynamically
-*  PatchUpdate patchToUpdate("01-2");
+* Example: Populate PatchStruct struct dynamically
+*  PatchStruct patchToUpdate("01-2");
 *  patchToUpdate.addSlotValue("slot_a", "A1");
 *  patchToUpdate.addSlotValue("slot_a_txt", "Updated Slot A");
 *  patchToUpdate.addSlotValue("slot_f", "F1");
 *  patchToUpdate.addSlotValue("slot_f_txt", "Updated Slot F");
 
+PatchStruct myPatch = getPatchData("01-2");
+String slotAValue = myPatch.getSlotValue("slotA");
+String slotATxtValue = myPatch.getSlotValue("slotATxt");
+bool slotAStateValue = myPatch.getSlotValue("slotAState").toInt(); // Assuming it's a boolean represented as an integer in the database
+
 */
-struct PatchUpdate
+struct PatchStruct
 {
     String patchName;
     std::unordered_map<String, String> slotValues;
 
-    PatchUpdate(String patchName) : patchName(patchName) {}
+    PatchStruct(String patchName) : patchName(patchName) {}
 
     void addSlotValue(String slotName, String slotValue)
     {
         slotValues[slotName] = slotValue;
+    }
+
+    String getSlotValue(const String &slotName) const
+    {
+        auto it = slotValues.find(slotName);
+        if (it != slotValues.end())
+        {
+            return it->second;
+        }
+        return ""; // Return empty string if the slot name is not found
     }
 };
 
@@ -70,7 +86,7 @@ void createTableIfNotExists()
     }
 }
 
-void updatePatch(const PatchUpdate &patchUpdate)
+void updatePatch(const PatchStruct &patchUpdate)
 {
     String updateQuery = "UPDATE patches SET ";
     for (const auto &entry : patchUpdate.slotValues)
@@ -149,4 +165,35 @@ void databaseInit()
         Serial.println("Database does not exist. Creating...");
         createTableIfNotExists();
     }
+}
+
+PatchStruct loadPatchData(const String& patchName) {
+
+    PatchStruct patchData("");
+    // Fetch patch data from the database
+    String query = "SELECT id, slot_a,slot_a_txt,slot_a_state,slot_b,slot_b_txt,slot_b_state,slot_c,slot_c_txt,slot_c_state,
+        slot_d,slot_d_txt,slot_d_state,slot_e,slot_e_txt,slot_e_state,slot_f,slot_f_txt,slot_f_state,slot_g,slot_g_txt,slot_g_state,slot_h,slot_h_txt,
+        slot_h_state, patch
+        FROM patches WHERE patch = '" + patchName + "';";
+    SQLiteResult result = db.query(query);
+
+    if (result.getNumRows() > 0) {
+        result.next();
+
+        int col = 0;
+        for (int i = 1; i <= 8; i++) {
+            col++;
+            patchData.addSlotValue("slot_" + String(char('a' + i - 1)), result.getString(col));
+            col++;
+            patchData.addSlotValue("slot_" + String(char('a' + i - 1)) + "_txt", result.getString(col));
+            displayText[i - 1] = result.getString(col);
+            col++;
+            patchData.addSlotValue("slot_" + String(char('a' + i - 1)) + "_state", result.getInt(col));
+        }
+        // Populate PatchStruct with values from the database
+        patchData.patchName = result.getString(25);
+        // Populate PatchStruct with values from the database
+    }
+
+    return patchData;
 }
