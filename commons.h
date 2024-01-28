@@ -37,6 +37,15 @@ const decode = (a, b) => {
   return [cc, calculated]
 }
 
+MOD Green 78 107 84
+DYN Light Blue 64 99 117
+DRIVE Red 126 78 78
+FREQ Purple 56 58 95
+WAH Purple 74 60 92
+PRE Green 63 97 96
+AMP Blue 51 67 88
+IR Gray 73 73 73
+CAB Brown 113 84 56
 
 const char effects[] = "{ \
     \"Compressor\": \"RRGGBB\", \
