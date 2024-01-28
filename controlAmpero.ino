@@ -1,8 +1,10 @@
+#include "database.h"
 #include "footswitch.h"
 #include "display.h"
 
 void setup() {
   Serial.begin(9600); 
+  databaseSetup();
   initDisplay();
   footSetup();
 }

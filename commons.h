@@ -11,11 +11,14 @@ const int CC_SLOT_B[] = { 54, 55, 56, 57, 58, 59 };
 #define PATCH_UP 27;
 #define PATCH_DOWN 26;
 
+const String DEFAULT_PATCH = "P00-1";
 const int DISPLAYS_N_BUTTONS = 8;
 String displayText[DISPLAYS_N_BUTTONS];
+String slots[DISPLAYS_N_BUTTONS];
 bool buttonStates[DISPLAYS_N_BUTTONS] = {false};
 
 #endif
+
 /*
 Bank MSB
 P00-1 ~ P42-2 CC=0 VL=0-127

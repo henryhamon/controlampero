@@ -1,9 +1,12 @@
+#include <config_ext.h>
+#include <shox96_0_2.h>
+#include <sqlite3.h>
+#include <unishox1.h>
 #include <Preferences.h>
-#include <SQLite_ESP32.h>
 #include <unordered_map>
 #include "commons.h"
 
-SQLite db;
+sqlite3 db;
 Preferences preferences;
 
 /*
@@ -130,8 +133,14 @@ void getUpNDown(String patch)
     if (row.isValid())
     {
         preferences.begin("controlampero_prefs", false);
+        preferences.putString("up", row.getString(0));
+        preferences.putString("current", row.getString(1));
+        preferences.putString("down", row.getString(2));
+        /*
         preferences.putInt("up", row.getString(0));
+        preferences.putInt("current", row.getString(1));
         preferences.putInt("down", row.getString(2));
+        */
         preferences.end();
     }
 }
@@ -144,36 +153,22 @@ int getUpPatchFromPreferences()
     return upPatch;
 }
 
-/**
- * Initialize the SQLite database and create the necessary table if it does not exist.
- */
-void databaseInit()
-{
-    // Initialize SQLite database
-    if (!db.begin("patches.db"))
-    {
-        Serial.println("Failed to initialize the database.");
-        while (1)
-        {
-            delay(1000); // Halt the program
-        }
+void patchToMemory(const PatchStruct& patchData) {
+    for (int i = 0; i <= 7; i++) {
+        displayText[i] = patchData.getSlotValue("slot_" + String(char('a' + i)) + "_txt");
+        buttonStates[i] = patchData.getSlotValue("slot_" + String(char('a' + i)) + "_state").toInt();
+        slots[i] = patchData.getSlotValue("slot_" + String(char('a' + i)));
     }
-
-    // Check if the database file exists
-    if (!db.exists())
-    {
-        Serial.println("Database does not exist. Creating...");
-        createTableIfNotExists();
-    }
+    getUpNDown(patchData.patchName);
 }
 
-PatchStruct loadPatchData(const String& patchName) {
+void loadPatchData(const String& patchName) {
 
     PatchStruct patchData("");
     // Fetch patch data from the database
-    String query = "SELECT id, slot_a,slot_a_txt,slot_a_state,slot_b,slot_b_txt,slot_b_state,slot_c,slot_c_txt,slot_c_state,
-        slot_d,slot_d_txt,slot_d_state,slot_e,slot_e_txt,slot_e_state,slot_f,slot_f_txt,slot_f_state,slot_g,slot_g_txt,slot_g_state,slot_h,slot_h_txt,
-        slot_h_state, patch
+    String query = "SELECT id, slot_a,slot_a_txt,slot_a_state,slot_b,slot_b_txt,slot_b_state,slot_c,slot_c_txt,slot_c_state, \
+        slot_d,slot_d_txt,slot_d_state,slot_e,slot_e_txt,slot_e_state,slot_f,slot_f_txt,slot_f_state,slot_g,slot_g_txt,slot_g_state,slot_h,slot_h_txt, \
+        slot_h_state, patch \
         FROM patches WHERE patch = '" + patchName + "';";
     SQLiteResult result = db.query(query);
 
@@ -186,15 +181,45 @@ PatchStruct loadPatchData(const String& patchName) {
             patchData.addSlotValue("slot_" + String(char('a' + i - 1)), result.getString(col));
             col++;
             patchData.addSlotValue("slot_" + String(char('a' + i - 1)) + "_txt", result.getString(col));
-            displayText[i - 1] = result.getString(col);
             col++;
             patchData.addSlotValue("slot_" + String(char('a' + i - 1)) + "_state", result.getInt(col));
-            buttonStates[i - 1] = result.getInt(col);
         }
         // Populate PatchStruct with values from the database
         patchData.patchName = result.getString(25);
-        // Populate PatchStruct with values from the database
+        patchToMemory(patchData);
     }
 
-    return patchData;
+    //patchData;
 }
+
+/**
+ * Initialize the SQLite database and create the necessary table if it does not exist.
+ */
+void databaseSetup()
+{
+    String currentPatch = "";
+    // Initialize SQLite database
+    if (!db.begin("patches.db")) {
+        Serial.println("Failed to initialize the database.");
+        while (1)
+        {
+            delay(1000); // Halt the program
+        }
+    }
+
+    // Check if the database file exists
+    if (!db.exists()) {
+        Serial.println("Database does not exist. Creating...");
+        createTableIfNotExists();
+    }
+
+    preferences.begin("controlampero_prefs", true);
+    currentPatch = preferences.getString("current", "");
+    preferences.end();
+    if (currentPatch.length() < 1) {
+        currentPatch = DEFAULT_PATCH;
+    }
+
+    loadPatchData(currentPatch);
+}
+
