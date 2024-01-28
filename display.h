@@ -6,16 +6,17 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <gfxfont.h>
+#include "commons.h"
 
 void initDisplay();
-void selDisp1();
-void selDisp2();
-void selDisp3(); 
-void selDisp4();
-void selDisp5();
-void selDisp6();
-void selDisp7();
-void selDisp8();
+void selDispA();
+void selDispB();
+void selDispC(); 
+void selDispD();
+void selDispE();
+void selDispF();
+void selDispG();
+void selDispH();
 void displayLoop();
 
 /// SCL - GPIO22
@@ -24,7 +25,7 @@ void displayLoop();
 #endif
 
 #define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
+#define SCREEN_HEIGHT 32
 #define OLED_RESET 4
 #define SCREEN_ADDRESS 0x3C
 
@@ -41,29 +42,29 @@ void initDisplay() {
 
     Serial.println("OLED intialized");
     Wire.begin();
-    selDisp1();
+    selDispA();
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     display.clearDisplay();
 
-    selDisp2();
+    selDispB();
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
-    selDisp3(); 
+    selDispC(); 
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
-    selDisp4();
+    selDispD();
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
-    selDisp5();
+    selDispE();
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
-    selDisp6();
+    selDispF();
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
-    selDisp7();
+    selDispG();
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
     
-    selDisp8();
+    selDispH();
     display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
 
     // text display tests
@@ -72,103 +73,88 @@ void initDisplay() {
 }
 
 void displayLoop() {
-    selDisp1();
-    display.setCursor(0, 0);
-    display.setTextSize(2);
-    display.println("DRIVE 1");
-    display.clearDisplay();
-
     
-    selDisp2();
-    display.setCursor(0, 0);
-    display.setTextSize(2);
-    display.println("DRIVE 2");
-    display.clearDisplay();
-
-    
-    selDisp3();
-    display.setCursor(0, 0);
-    display.setTextSize(2);
-    display.println("BOOST 1");
-    display.clearDisplay();
-
-    
-    selDisp4();
-    display.setCursor(0, 0);
-    display.setTextSize(2);
-    display.println("BOOST 2");
-    display.clearDisplay();
-
-    
-    selDisp5();
-    display.setCursor(0, 0);
-    display.setTextSize(2);
-    display.println("DELAY 1");
-    display.clearDisplay();
-
-    
-    selDisp6();
-    display.setCursor(0, 0);
-    display.setTextSize(2);
-    display.println("DELAY 2");
-    display.clearDisplay();
-
-    
-    selDisp7();
-    display.setCursor(0, 0);
-    display.setTextSize(2);
-    display.println("REVERB 1");
-    display.clearDisplay();
-
-    
-    selDisp8();
-    display.setCursor(0, 0);
-    display.setTextSize(2);
-    display.println("REVERB 2");
-    display.clearDisplay();
+    for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
+        switch (currentDisplay) {
+        case 0:
+            selDispA();
+            break;
+        case 1:
+            selDispB();
+            break;
+        case 2:
+            selDispC();
+            break;
+        case 3:
+            selDispD();
+            break;
+        case 4:
+            selDispE();
+            break;
+        case 5:
+            selDispF();
+            break;
+        case 6:
+            selDispG();
+            break;
+        case 7:
+            selDispH();
+            break;
+        default:
+            break;
+        }
+        display.setCursor(0, 0);
+        display.setTextSize(2);
+        if (displayText[currentDisplay].length() > 0) {
+            display.println(displayText[currentDisplay]);
+        } else {
+            display.println(" ");
+        }
+        display.clearDisplay();
+    }
 
 }
 
 
-void selDisp1() {
+void selDispA() {
     digitalWrite(pinAddA, LOW);
     digitalWrite(pinAddB, LOW);
     digitalWrite(pinAddC, LOW);
 }
 
-void selDisp2() {
+void selDispB() {
     digitalWrite(pinAddA, HIGH);
     digitalWrite(pinAddB, LOW);
     digitalWrite(pinAddC, LOW);
 }
-void selDisp3() {
+void selDispC() {
     digitalWrite(pinAddA, LOW);
     digitalWrite(pinAddB, HIGH);
     digitalWrite(pinAddC, LOW);
 }
-void selDisp4() {
+void selDispD() {
     digitalWrite(pinAddA, HIGH);
     digitalWrite(pinAddB, HIGH);
     digitalWrite(pinAddC, LOW);
 }
-void selDisp5() {
+void selDispE() {
     digitalWrite(pinAddA, LOW);
     digitalWrite(pinAddB, LOW);
     digitalWrite(pinAddC, HIGH);
 }
-void selDisp6() {
+void selDispF() {
     digitalWrite(pinAddA, HIGH);
     digitalWrite(pinAddB, LOW);
     digitalWrite(pinAddC, HIGH);
 }
 
-void selDisp7() {
+void selDispG() {
     digitalWrite(pinAddA, LOW);
     digitalWrite(pinAddB, HIGH);
     digitalWrite(pinAddC, HIGH);
 }
 
-void selDisp8() {
+void selDispH() {
     digitalWrite(pinAddA, HIGH);
     digitalWrite(pinAddB, HIGH);
     digitalWrite(pinAddC, HIGH);

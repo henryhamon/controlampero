@@ -1,15 +1,18 @@
-#ifndef PARAMS_H
-#define PARAMS_H
+#ifndef COMMONS_H
+#define COMMONS_H
 
 // AMPERO STOMP 2 MIDI Control Information
 #define VL_SLOT_ON 62;
 #define VL_SLOT_OFF 65;
 
-const CC_SLOT_A[] = { 48, 49, 50, 51, 52, 53 };
-const CC_SLOT_B[] = { 54, 55, 56, 57, 58, 59 };
+const int CC_SLOT_A[] = { 48, 49, 50, 51, 52, 53 };
+const int CC_SLOT_B[] = { 54, 55, 56, 57, 58, 59 };
 
 #define PATCH_UP 27;
 #define PATCH_DOWN 26;
+
+const int DISPLAYS_N_BUTTONS = 8;
+String displayText[DISPLAYS_N_BUTTONS];
 
 #endif
 /*

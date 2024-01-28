@@ -5,6 +5,15 @@
 SQLite db;
 Preferences preferences;
 
+/*
+* Example: Populate PatchUpdate struct dynamically
+*  PatchUpdate patchToUpdate("01-2");
+*  patchToUpdate.addSlotValue("slot_a", "A1");
+*  patchToUpdate.addSlotValue("slot_a_txt", "Updated Slot A");
+*  patchToUpdate.addSlotValue("slot_f", "F1");
+*  patchToUpdate.addSlotValue("slot_f_txt", "Updated Slot F");
+
+*/
 struct PatchUpdate
 {
     String patchName;
@@ -55,7 +64,7 @@ void createTableIfNotExists()
     {
         for (int j = 1; j <= 3; j++)
         {
-            String patchName = String(i, 10).padStart(2, '0') + "-" + String(j, 10);
+            String patchName = "P" + String(i, 10).padStart(2, '0') + "-" + String(j, 10);
             db.exec("INSERT INTO patches (patch) VALUES ('" + patchName + "');");
         }
     }
