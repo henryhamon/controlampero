@@ -189,6 +189,7 @@ PatchStruct loadPatchData(const String& patchName) {
             displayText[i - 1] = result.getString(col);
             col++;
             patchData.addSlotValue("slot_" + String(char('a' + i - 1)) + "_state", result.getInt(col));
+            buttonStates[i - 1] = result.getInt(col);
         }
         // Populate PatchStruct with values from the database
         patchData.patchName = result.getString(25);

@@ -1,5 +1,3 @@
-#include <Arduino_JSON.h>
-
 #include "footswitch.h"
 #include "display.h"
 
@@ -12,6 +10,6 @@ void setup() {
 void loop() {
 
   // put your main code here, to run repeatedly:
-  footEvent();
   displayLoop();
+  footEvent();
 }
