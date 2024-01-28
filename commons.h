@@ -13,6 +13,7 @@ const int CC_SLOT_B[] = { 54, 55, 56, 57, 58, 59 };
 
 const int DISPLAYS_N_BUTTONS = 8;
 String displayText[DISPLAYS_N_BUTTONS];
+bool buttonStates[DISPLAYS_N_BUTTONS] = {false};
 
 #endif
 /*
@@ -36,7 +37,6 @@ const decode = (a, b) => {
   return [cc, calculated]
 }
 
-*/
 
 const char effects[] = "{ \
     \"Compressor\": \"RRGGBB\", \
@@ -70,3 +70,4 @@ const char effects[] = "{ \
     \"Delay\":    \"RRGGBB\", \
     \"Rever\":    \"RRGGBB\" }";
 
+*/

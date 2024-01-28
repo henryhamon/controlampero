@@ -1,4 +1,5 @@
 #include <ezButton.h>
+#include "commons.h"
 
 #define NUM_BUTTONS 10
 #define EFX_BUTTONS 8
@@ -8,7 +9,6 @@
 // btnDown and btnUp 34..35
 //                     A   B   C   D   E   F   G   H   Dow  UP
 ezButton buttons[] = { 12, 13, 14, 25, 26, 27, 32, 33, 34, 35 };
-bool buttonStates[EFX_BUTTONS] = {false};
 
 void onButtonPressed(int idxBtn) {
   if (idxBtn < EFX_BUTTONS) {
