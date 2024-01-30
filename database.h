@@ -1,225 +1,295 @@
-#include <config_ext.h>
-#include <shox96_0_2.h>
-#include <sqlite3.h>
-#include <unishox1.h>
+
+#ifndef DATABASE_H
+#define DATABASE_H
+
 #include <Preferences.h>
-#include <unordered_map>
 #include "commons.h"
+#include <Arduino_JSON.h>
+#include <unordered_set>
+#include <unordered_map>
+using namespace std;
 
-sqlite3 db;
-Preferences preferences;
+extern const char* validSlotNames[24];
 
-/*
-* Example: Populate PatchStruct struct dynamically
-*  PatchStruct patchToUpdate("01-2");
-*  patchToUpdate.addSlotValue("slot_a", "A1");
-*  patchToUpdate.addSlotValue("slot_a_txt", "Updated Slot A");
-*  patchToUpdate.addSlotValue("slot_f", "F1");
-*  patchToUpdate.addSlotValue("slot_f_txt", "Updated Slot F");
+class Database {
+public:
+    struct PatchStruct {
+        String patch;
+        String slotValues[24];
 
-PatchStruct myPatch = getPatchData("01-2");
-String slotAValue = myPatch.getSlotValue("slotA");
-String slotATxtValue = myPatch.getSlotValue("slotATxt");
-bool slotAStateValue = myPatch.getSlotValue("slotAState").toInt(); // Assuming it's a boolean represented as an integer in the database
+        PatchStruct() {}
 
-*/
-struct PatchStruct
-{
-    String patchName;
-    std::unordered_map<String, String> slotValues;
+        PatchStruct(const String& patchName) : patch(patchName) {}
 
-    PatchStruct(String patchName) : patchName(patchName) {}
-
-    void addSlotValue(String slotName, String slotValue)
-    {
-        slotValues[slotName] = slotValue;
-    }
-
-    String getSlotValue(const String &slotName) const
-    {
-        auto it = slotValues.find(slotName);
-        if (it != slotValues.end())
-        {
-            return it->second;
+        void addSlotValue(const String& slotName, const String& slotValue) {
+            int index = getSlotIndex(slotName);
+            if (index != -1) {
+                slotValues[index] = slotValue;
+            }
         }
-        return ""; // Return empty string if the slot name is not found
-    }
+
+        String getSlotValue(const String& slotName) const {
+            int index = getSlotIndex(slotName);
+            return (index != -1) ? slotValues[index] : "";
+        }
+
+    private:
+        int getSlotIndex(const String& slotName) const {
+            if (slotName == "slot_a") return 0;
+            else if (slotName == "slot_b") return 1;
+            // ... continue for other slots ...
+            else return -1; // Invalid slot name
+        }
+    };
+
+    Database();
+
+    String getCurrentPatch() const;
+    void setCurrentPatch(const String& patch);
+    PatchStruct searchPatchByName(const String& patchName);
+    String getPatchKey(const String& patch);
+    void savePatchData(const PatchStruct& patchData);
+    String getCurrentSelectedPatch();
+
+private:
+    Preferences preferences;
+    const int maxPatches = 300;
+    int currentIndex;
+    String currentPatch;
+    PatchStruct patches[300];
+
+    void persistDatabase();
+    String toJson(const PatchStruct& patchData);
+    PatchStruct fromJson(const String& jsonString);
+
+    String getPreviousPatch() const;
+    String getNextPatch() const;
+    void updatePatchLinks(const String& newPatchName);
+    void changeCurrentPatch(const String& patchName);
 };
 
-void createTableIfNotExists()
-{
-    db.exec("CREATE TABLE patches ( \
-            id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            slot_a VARCHAR(2), \
-            slot_a_txt VARCHAR(15), \
-            slot_a_state BOOLEAN, \
-            slot_b VARCHAR(2), \
-            slot_b_txt VARCHAR(15), \
-            slot_b_state BOOLEAN, \
-            slot_c VARCHAR(2), \
-            slot_c_txt VARCHAR(15), \
-            slot_c_state BOOLEAN, \
-            slot_d VARCHAR(2), \
-            slot_d_txt VARCHAR(15), \
-            slot_d_state BOOLEAN, \
-            slot_e VARCHAR(2), \
-            slot_e_txt VARCHAR(15), \
-            slot_e_state BOOLEAN, \
-            slot_f VARCHAR(2), \
-            slot_f_txt VARCHAR(15), \
-            slot_f_state BOOLEAN, \
-            slot_g VARCHAR(2), \
-            slot_g_txt VARCHAR(15), \
-            slot_g_state BOOLEAN, \
-            slot_h VARCHAR(2), \
-            slot_h_txt VARCHAR(2), \
-            slot_h_state BOOLEAN, \
-            patch VARCHAR(25) UNIQUE \
-        ); \
-        CREATE UNIQUE INDEX idx_patch ON patches(patch);");
+#endif // DATABASE_H
+//---------------------------------------------------------------------------------
 
-    // Populate
-    for (int i = 0; i < 100; i++)
-    {
-        for (int j = 1; j <= 3; j++)
-        {
-            String patchName = "P" + String(i, 10).padStart(2, '0') + "-" + String(j, 10);
-            db.exec("INSERT INTO patches (patch) VALUES ('" + patchName + "');");
+const char* validSlotNames[24] = {
+    "slot_a", "slot_a_txt", "slot_a_state",
+    "slot_b", "slot_b_txt", "slot_b_state",
+    "slot_c", "slot_c_txt", "slot_c_state",
+    "slot_d", "slot_d_txt", "slot_d_state",
+    "slot_e", "slot_e_txt", "slot_e_state",
+    "slot_f", "slot_f_txt", "slot_f_state",
+    "slot_g", "slot_g_txt", "slot_g_state",
+    "slot_h", "slot_h_txt", "slot_h_state"
+};
+
+Database::Database() {
+    currentIndex = -1; // Initialize currentIndex in the constructor
+    preferences.begin("controlamp_prefs", false);
+
+    if (!preferences.begin("controlamp_prefs", true)) {
+        // Controlamp_prefs does not exist, initialize it
+
+        // Add 3 empty PatchStructs with names "P00-1", "P00-2", and "P00-3"
+        for (int i = 1; i <= 3; ++i) {
+            String patchName = "P00-" + String(i, 10);
+            PatchStruct emptyPatch(patchName);
+            patches[i - 1] = emptyPatch;
         }
-    }
-}
 
-void updatePatch(const PatchStruct &patchUpdate)
-{
-    String updateQuery = "UPDATE patches SET ";
-    for (const auto &entry : patchUpdate.slotValues)
-    {
-        updateQuery += entry.first + " = '" + entry.second + "', ";
-    }
-    updateQuery.remove(updateQuery.length() - 2);
-    updateQuery += " WHERE patch = '" + patchUpdate.patchName + "';";
-    db.exec(updateQuery);
-}
-
-/**
- * Retrieves the up and down patches for a given patch from the database.
- *
- * @param patch the patch to retrieve up and down patches for
- *
- * @return void
- *
- * @throws ErrorType if there is an error retrieving the patches from the database
- */
-void getUpNDown(String patch)
-{
-    String query = "SELECT \
-        p2.patch AS Up, p.patch AS Selected,p1.patch As Down \
-    FROM \
-        patches AS p \
-    LEFT JOIN \
-        patches AS p1 ON p1.id > p.id \
-    LEFT JOIN \
-        patches AS p1a ON p1a.id > p.id AND p1a.id < p1.id \
-    LEFT JOIN \
-        patches AS p2 ON p2.id < p.id \
-    LEFT JOIN \
-        patches AS p2a ON p2a.id < p.id AND p2a.id > p2.id \
-    WHERE \
-        p1a.id IS NULL \
-        AND p2a.ID IS NULL ";
-    query = query + " AND p.patch = '" + patch + "';";
-    SQLiteRow row = db.getRow(query);
-
-    if (row.isValid())
-    {
-        preferences.begin("controlampero_prefs", false);
-        preferences.putString("up", row.getString(0));
-        preferences.putString("current", row.getString(1));
-        preferences.putString("down", row.getString(2));
-        /*
-        preferences.putInt("up", row.getString(0));
-        preferences.putInt("current", row.getString(1));
-        preferences.putInt("down", row.getString(2));
-        */
-        preferences.end();
-    }
-}
-
-int getUpPatchFromPreferences()
-{
-    preferences.begin("controlampero_prefs", true);
-    int upPatch = preferences.getInt("up", -1);
-    preferences.end();
-    return upPatch;
-}
-
-void patchToMemory(const PatchStruct& patchData) {
-    for (int i = 0; i <= 7; i++) {
-        displayText[i] = patchData.getSlotValue("slot_" + String(char('a' + i)) + "_txt");
-        buttonStates[i] = patchData.getSlotValue("slot_" + String(char('a' + i)) + "_state").toInt();
-        slots[i] = patchData.getSlotValue("slot_" + String(char('a' + i)));
-    }
-    getUpNDown(patchData.patchName);
-}
-
-void loadPatchData(const String& patchName) {
-
-    PatchStruct patchData("");
-    // Fetch patch data from the database
-    String query = "SELECT id, slot_a,slot_a_txt,slot_a_state,slot_b,slot_b_txt,slot_b_state,slot_c,slot_c_txt,slot_c_state, \
-        slot_d,slot_d_txt,slot_d_state,slot_e,slot_e_txt,slot_e_state,slot_f,slot_f_txt,slot_f_state,slot_g,slot_g_txt,slot_g_state,slot_h,slot_h_txt, \
-        slot_h_state, patch \
-        FROM patches WHERE patch = '" + patchName + "';";
-    SQLiteResult result = db.query(query);
-
-    if (result.getNumRows() > 0) {
-        result.next();
-
-        int col = 0;
-        for (int i = 1; i <= 8; i++) {
-            col++;
-            patchData.addSlotValue("slot_" + String(char('a' + i - 1)), result.getString(col));
-            col++;
-            patchData.addSlotValue("slot_" + String(char('a' + i - 1)) + "_txt", result.getString(col));
-            col++;
-            patchData.addSlotValue("slot_" + String(char('a' + i - 1)) + "_state", result.getInt(col));
+        // Populate
+        for (int i = 0; i < 100; i++) {
+            for (int j = 1; j <= 3; j++) {
+                String patch_name = String(i, 10) + "-" + String(j, 10);
+                if (i < 10) {
+                    patch_name = "0" + patch_name;
+                }
+                savePatchData(PatchStruct(patch_name));
+            }
         }
-        // Populate PatchStruct with values from the database
-        patchData.patchName = result.getString(25);
-        patchToMemory(patchData);
-    }
 
-    //patchData;
+        changeCurrentPatch("P00-1");
+        persistDatabase();
+    } else if (preferences.begin("controlamp_prefs", false)) {
+        persistDatabase();
+    }
 }
 
-/**
- * Initialize the SQLite database and create the necessary table if it does not exist.
- */
-void databaseSetup()
-{
-    String currentPatch = "";
-    // Initialize SQLite database
-    if (!db.begin("patches.db")) {
-        Serial.println("Failed to initialize the database.");
-        while (1)
-        {
-            delay(1000); // Halt the program
+
+void Database::savePatchData(const PatchStruct& patchData) {
+    int currentIndex = -1;
+    for (int i = 0; i < maxPatches; ++i) {
+        if (patches[i].patch == patchData.patch) {
+            currentIndex = i;
+            break;
         }
     }
 
-    // Check if the database file exists
-    if (!db.exists()) {
-        Serial.println("Database does not exist. Creating...");
-        createTableIfNotExists();
+}
+
+
+String Database::getCurrentPatch() const {
+    return currentPatch;
+}
+
+void Database::setCurrentPatch(const String& patch) {
+    currentPatch = patch;
+}
+
+void Database::changeCurrentPatch(const String& patchName) {
+    // Check if the patch exists before changing
+    if (searchPatchByName(patchName).patch == patchName) {
+        setCurrentPatch(patchName);
+    }
+}
+
+String Database::getCurrentSelectedPatch() const {
+    return currentPatch;
+}
+
+Database::PatchStruct Database::getPatchData(const String& patch) {
+    String jsonString = preferences.getString(getPatchKey(patch), "{}");
+    return fromJson(jsonString);
+}
+
+void Database::savePatchData(const PatchStruct& patchData) {
+    preferences.putString(getPatchKey(patchData.patch), toJson(patchData));
+    persistDatabase();  // Save the database after each update
+}
+
+Database::PatchStruct Database::searchPatchByName(const String& patchName) {
+    currentIndex = -1;
+    for (int i = 0; i < maxPatches; ++i) {
+        if (patches[i].patch == patchName) {
+            currentIndex = i;
+            break;
+        }
+    }
+    return PatchStruct();
+}
+
+void Database::persistDatabase() {
+    // Save the entire database to Preferences
+    DynamicJsonDocument databaseDoc(maxPatches * 1024);
+    JsonArray databaseArray = databaseDoc.to<JsonArray>();
+
+    for (int i = 0; i < maxPatches; ++i) {
+        JsonArray patchArray = databaseArray.createNestedArray();
+        patchArray.add(patches[i].patch);
+        // Add other fields ...
+
+        String jsonString;
+        serializeJson(patchArray, jsonString);
+        preferences.putString(getPatchKey(patches[i].patch), jsonString);
+    }
+}
+
+String Database::getPatchKey(const String& patch) {
+    return "patch_" + patch;
+}
+
+String Database::toJson(const Database::PatchStruct& patchData) {
+    DynamicJsonDocument doc(1024);
+    doc["patch"] = patchData.patch;
+    // Add other fields ...
+
+    String jsonString;
+    serializeJson(doc, jsonString);
+    return jsonString;
+}
+
+Database::PatchStruct Database::fromJson(const String& jsonString) {
+    DynamicJsonDocument doc(1024);
+    deserializeJson(doc, jsonString);
+
+    PatchStruct patchData;
+    patchData.patch = doc["patch"];
+    // Populate other fields ...
+
+    return patchData;
+}
+
+String Database::getPreviousPatch() const {
+    int currentIndex = -1;
+    for (int i = 0; i < maxPatches; ++i) {
+        if (patches[i].patch == currentPatch) {
+            currentIndex = i;
+            break;
+        }
     }
 
-    preferences.begin("controlampero_prefs", true);
-    currentPatch = preferences.getString("current", "");
-    preferences.end();
-    if (currentPatch.length() < 1) {
-        currentPatch = DEFAULT_PATCH;
+    if (currentIndex > 0) {
+        return patches[currentIndex - 1].patch;
+    } else {
+        return "";
+    }
+}
+
+Database::PatchStruct Database::openPatch(const String& patchName) {
+    currentIndex = -1;
+    for (int i = 0; i < maxPatches; ++i) {
+        if (patches[i].patch == patchName) {
+            currentIndex = i;
+            break;
+        }
     }
 
-    loadPatchData(currentPatch);
+}
+
+String Database::getNextPatch() const {
+    int currentIndex = -1;
+    for (int i = 0; i < maxPatches; ++i) {
+        if (patches[i].patch == currentPatch) {
+            currentIndex = i;
+            break;
+        }
+    }
+
+    if (currentIndex < maxPatches - 1) {
+        return patches[currentIndex + 1].patch;
+    } else {
+        return "";
+    }
+}
+
+
+String Database::getPreviousPatch() const {
+    if (currentIndex > 0) {
+        return patches[currentIndex - 1].patch;
+    } else {
+        return "";
+    }
+}
+
+String Database::getNextPatch() const {
+    if (currentIndex < maxPatches - 1) {
+        return patches[currentIndex + 1].patch;
+    } else {
+        return "";
+    }
+}
+
+void Database::updatePatchLinks(const String& newPatchName) {
+    // Find the index of the new patch
+    int newIndex = -1;
+    for (int i = 0; i < maxPatches; ++i) {
+        if (patches[i].patch == newPatchName) {
+            newIndex = i;
+            break;
+        }
+    }
+    if (newIndex != -1) {
+        // Update the 'after' link of the patch before the new patch
+        if (newIndex > 0) {
+            // Remove the 'after' link, as we don't have it anymore
+            // patches[newIndex - 1].after = newPatchName;
+        }
+
+        // Update the 'before' link of the patch after the new patch
+        if (newIndex < maxPatches - 1) {
+            // Remove the 'before' link, as we don't have it anymore
+            // patches[newIndex + 1].before = newPatchName;
+        }
+    }
+
 }
 
