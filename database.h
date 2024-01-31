@@ -45,11 +45,12 @@ public:
     Database();
 
     String getCurrentPatch() const;
-    void setCurrentPatch(const String& patch);
-    PatchStruct searchPatchByName(const String& patchName);
+    String getCurrentSelectedPatch() const;
     String getPatchKey(const String& patch);
-    void savePatchData(const PatchStruct& patchData);
-    String getCurrentSelectedPatch();
+    PatchStruct getPatchData(const String& patch);
+    PatchStruct searchPatchByName(const String& patchName);
+    void setCurrentPatch(const String& patch);
+    void savePatchData(const PatchStruct& patchData); 
 
 private:
     Preferences preferences;
@@ -114,7 +115,6 @@ Database::Database() {
     }
 }
 
-
 void Database::savePatchData(const PatchStruct& patchData) {
     int currentIndex = -1;
     for (int i = 0; i < maxPatches; ++i) {
@@ -125,7 +125,6 @@ void Database::savePatchData(const PatchStruct& patchData) {
     }
 
 }
-
 
 String Database::getCurrentPatch() const {
     return currentPatch;
@@ -277,19 +276,4 @@ void Database::updatePatchLinks(const String& newPatchName) {
             break;
         }
     }
-    if (newIndex != -1) {
-        // Update the 'after' link of the patch before the new patch
-        if (newIndex > 0) {
-            // Remove the 'after' link, as we don't have it anymore
-            // patches[newIndex - 1].after = newPatchName;
-        }
-
-        // Update the 'before' link of the patch after the new patch
-        if (newIndex < maxPatches - 1) {
-            // Remove the 'before' link, as we don't have it anymore
-            // patches[newIndex + 1].before = newPatchName;
-        }
-    }
-
 }
-
