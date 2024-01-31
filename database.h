@@ -116,14 +116,8 @@ Database::Database() {
 }
 
 void Database::savePatchData(const PatchStruct& patchData) {
-    int currentIndex = -1;
-    for (int i = 0; i < maxPatches; ++i) {
-        if (patches[i].patch == patchData.patch) {
-            currentIndex = i;
-            break;
-        }
-    }
-
+    preferences.putString(getPatchKey(patchData.patch), toJson(patchData));
+    persistDatabase(); 
 }
 
 String Database::getCurrentPatch() const {
@@ -146,8 +140,7 @@ String Database::getCurrentSelectedPatch() const {
 }
 
 Database::PatchStruct Database::getPatchData(const String& patch) {
-    String jsonString = preferences.getString(getPatchKey(patch), "{}");
-    return fromJson(jsonString);
+    return fromJson(preferences.getString(getPatchKey(patch.c_str())));
 }
 
 void Database::savePatchData(const PatchStruct& patchData) {
