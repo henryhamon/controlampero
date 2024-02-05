@@ -15,6 +15,9 @@ const int DISPLAYS_N_BUTTONS = 8;
 String displayText[DISPLAYS_N_BUTTONS];
 bool buttonStates[DISPLAYS_N_BUTTONS] = {false};
 
+//                                       A  B  C  D  E  F  G  H 
+int buttonActions[DISPLAYS_N_BUTTONS] = {1, 2, 3, 4, 6, 7, 8, 9};
+
 #endif
 /*
 Bank MSB
