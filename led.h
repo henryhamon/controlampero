@@ -27,14 +27,14 @@ void initLed()
 
     delay(100);
     pixels.clear();
+    pixels.show();
 
 }
 
 void ledLoop()
 {
     pixels.clear();
-    delay(1);
-    pixels.clear();
+    pixels.show();
     for (int i = 0; i < DISPLAYS_N_BUTTONS; i++)
     {
         if (buttonStates[i])
@@ -43,4 +43,8 @@ void ledLoop()
             pixels.show();
         }
     }
+}
+
+uint32_t getRed(){
+    return pixels.Color(84, 22, 180);
 }
