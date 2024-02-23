@@ -18,101 +18,70 @@ void selDispF();
 void selDispG();
 void selDispH();
 void displayLoop();
+void selectDisplay(const int displayIndex);
 
-/// SCL - GPIO22
-/// SDA - GPIO21
+/// SCL/SCK - GPIO22
+/// SDA     - GPIO21
 // Define e Configura Display
 #endif
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 32
-#define OLED_RESET 4
+#define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-int pinAddA = 19;
+int pinAddA = 5;
 int pinAddB = 18;
-int pinAddC = 5;
+int pinAddC = 19;
 
 void initDisplay() {
-    pinMode(pinAddA, OUTPUT);
-    pinMode(pinAddB, OUTPUT);
-    pinMode(pinAddC, OUTPUT);
+  pinMode(pinAddA, OUTPUT);
+  pinMode(pinAddB, OUTPUT);
+  pinMode(pinAddC, OUTPUT);
+ 
 
-    Serial.println("OLED intialized");
-    Wire.begin();
-    selDispA();
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+  Serial.println("OLED intialized");
+  Wire.begin();
+  for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
+    selectDisplay(currentDisplay);
+    display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
     display.clearDisplay();
-
-    selDispB();
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-    selDispC(); 
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-    selDispD();
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-    selDispE();
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-    selDispF();
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-    selDispG();
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-    
-    selDispH();
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
-
-    // text display tests
     display.setTextSize(2);
     display.setTextColor(WHITE);
+    display.setCursor(0, 5);
+    display.print("SLOT ");
+    display.println(currentDisplay + 1);
+    display.setTextSize(1);
+    display.println("INITIALIZING");
+    display.display();
+    delay(5);
+  }
+  delay(500);
+ 
 }
 
 void displayLoop() {
-    
-    for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
-        switch (currentDisplay) {
-        case 0:
-            selDispA();
-            break;
-        case 1:
-            selDispB();
-            break;
-        case 2:
-            selDispC();
-            break;
-        case 3:
-            selDispD();
-            break;
-        case 4:
-            selDispE();
-            break;
-        case 5:
-            selDispF();
-            break;
-        case 6:
-            selDispG();
-            break;
-        case 7:
-            selDispH();
-            break;
-        default:
-            break;
-        }
-        display.setCursor(0, 0);
-        display.setTextSize(2);
-        if (displayText[currentDisplay].length() > 0) {
-            display.println(displayText[currentDisplay]);
-        } else {
-            display.println(" ");
-        }
-        display.clearDisplay();
-    }
+  /*
+  for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
+      selectDisplay(currentDisplay);
+      display.clearDisplay();
+      display.display();
+  }
 
+  for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
+      selectDisplay(currentDisplay);
+      display.setCursor(0, 5);
+      display.setTextSize(2);
+      if (displayText[currentDisplay].length() > 0) {
+          display.println(displayText[currentDisplay]);
+      } else {
+          display.println("  EMPTY  ");
+      }
+      display.display();
+  }
+  //*/
 }
 
 
@@ -158,4 +127,35 @@ void selDispH() {
     digitalWrite(pinAddA, HIGH);
     digitalWrite(pinAddB, HIGH);
     digitalWrite(pinAddC, HIGH);
+}
+
+void selectDisplay(const int displayIndex) {
+  switch (displayIndex) {
+    case 0:
+        selDispA();
+        break;
+    case 1:
+        selDispB();
+        break;
+    case 2:
+        selDispC();
+        break;
+    case 3:
+        selDispD();
+        break;
+    case 4:
+        selDispE();
+        break;
+    case 5:
+        selDispF();
+        break;
+    case 6:
+        selDispG();
+        break;
+    case 7:
+        selDispH();
+        break;
+    default:
+        break;
+    }
 }
