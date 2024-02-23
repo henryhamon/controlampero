@@ -4,7 +4,7 @@
 #include <Adafruit_NeoPixel.h>
 #include "commons.h"
 
-#define LED_PIN 4
+#define LED_PIN 0
 
 Adafruit_NeoPixel pixels(DISPLAYS_N_BUTTONS, LED_PIN);
 void initLed();
