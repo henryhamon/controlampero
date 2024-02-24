@@ -8,6 +8,7 @@
 #include <gfxfont.h>
 #include "commons.h"
 
+void tempData();
 void initDisplay();
 void selDispA();
 void selDispB();
@@ -31,10 +32,15 @@ void selectDisplay(const int displayIndex);
 #define SCREEN_ADDRESS 0x3C
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+/*
+int pinAddA = 15;
+int pinAddB = 2;
+int pinAddC = 4;
+//*/
+int pinAddA = 14;
+int pinAddB = 15;
+int pinAddC = 16;
 
-int pinAddA = 5;
-int pinAddB = 18;
-int pinAddC = 19;
 
 void initDisplay() {
   pinMode(pinAddA, OUTPUT);
@@ -43,7 +49,7 @@ void initDisplay() {
  
 
   Serial.println("OLED intialized");
-  Wire.begin();
+  Wire.begin();  
   for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
     selectDisplay(currentDisplay);
     display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
@@ -52,36 +58,69 @@ void initDisplay() {
     display.setTextColor(WHITE);
     display.setCursor(0, 5);
     display.print("SLOT ");
+    //display.print("NONONONO ");
     display.println(currentDisplay + 1);
     display.setTextSize(1);
     display.println("INITIALIZING");
     display.display();
-    delay(5);
+    delay(50);
   }
   delay(500);
  
 }
 
-void displayLoop() {
-  /*
-  for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
-      selectDisplay(currentDisplay);
-      display.clearDisplay();
-      display.display();
-  }
+void tempData() {
+    presets[0] = {"COMPRESSOR", 0, false, 1 };
+    buttonStates[0] = false;
+    buttonActions[0] = 0;
+    presets[1] = {     "BOOST", 1, false, 1};
+    buttonStates[1] = false;
+    buttonActions[1] = 1;
+    presets[2] = {"CRUNCH",  2,  true, 2};
+    buttonStates[2] = true;
+    buttonActions[2] = 2;
+    presets[3] = {"DISTORT", 3, false, 2};
+    buttonStates[3] = false;
+    buttonActions[3] = 3;
+    presets[4] = {"DELAY 1", 7, true, 3};
+    buttonStates[4] = true;
+    buttonActions[4] = 7;
+    presets[5] = {"DELAY 2", 8, false, 3};
+    buttonStates[5] = false;
+    buttonActions[5] = 8;
+    presets[6] = {"REVERB 1", 9, false, 4};
+    buttonStates[6] = false;
+    buttonActions[6] = 9;
+    presets[7] = {"REVERB 2", 10, false, 4};
+    buttonStates[7] = false;
+    buttonActions[7] = 10;
+}
 
-  for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
-      selectDisplay(currentDisplay);
-      display.setCursor(0, 5);
-      display.setTextSize(2);
-      if (displayText[currentDisplay].length() > 0) {
-          display.println(displayText[currentDisplay]);
-      } else {
-          display.println("  EMPTY  ");
-      }
-      display.display();
-  }
-  //*/
+void displayLoop() {
+    if (reloadDisplay) {
+        reloadDisplay = false;
+        for (int currentDisplay = 0; currentDisplay < DISPLAYS_N_BUTTONS; ++currentDisplay) {
+            selectDisplay(currentDisplay);
+            display.clearDisplay();
+            display.setTextSize(2);
+            display.setTextColor(WHITE);
+            display.setCursor(0, 5);
+            if (presets[currentDisplay].name.length() > 0) {
+                display.println(presets[currentDisplay].name);
+                display.setTextSize(1);
+                if (presets[currentDisplay].action > 6) {
+                    display.print("B");
+                    display.print(presets[currentDisplay].action - 5);
+                } else {
+                    display.print("A");
+                    display.print(presets[currentDisplay].action + 1);
+                }
+            } else {
+                display.println("  ---  ");
+            }
+            display.display();
+        }
+    }
 }
 
 

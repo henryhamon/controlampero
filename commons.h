@@ -14,11 +14,25 @@ const int CC_SLOT_B[] = { 54, 55, 56, 57, 58, 59 };
 const int DISPLAYS_N_BUTTONS = 8;
 String displayText[DISPLAYS_N_BUTTONS];
 bool buttonStates[DISPLAYS_N_BUTTONS] = {false};
+bool reloadDisplay = true;
+int currentPatch = 0;
 
 //                                       A  B  C  D  E  F  G  H 
 int buttonActions[DISPLAYS_N_BUTTONS] = {1, 2, 3, 4, 6, 7, 8, 9};
 
+struct Stomp
+{
+  String name;
+  int action;
+  bool state;
+  int type;
+};
+
+Stomp presets[DISPLAYS_N_BUTTONS];
+
 #endif
+
+
 /*
 Bank MSB
 P00-1 ~ P42-2 CC=0 VL=0-127

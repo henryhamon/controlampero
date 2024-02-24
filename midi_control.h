@@ -8,6 +8,8 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 int getSlotCC(int button);
 void sendToSlot(int button, bool state);
+void tunerOn();
+void tunerOff();
 
 #endif
 
@@ -32,4 +34,12 @@ void sendToSlot(int button, bool state) {
     }
     Serial.print("CC: "); Serial.print(CC); Serial.print(" Value: "); Serial.println(value);
     MIDI.sendControlChange(value, CC, 1);
+}
+
+void tunerOn() {
+    MIDI.sendControlChange(62, 60, 1);
+}
+
+void tunerOff() {
+    MIDI.sendControlChange(120, 60, 1);
 }
