@@ -3,6 +3,7 @@
 
 #include <Adafruit_NeoPixel.h>
 #include "commons.h"
+#include "colors.h"
 
 // #define LED_PIN 0 // ESP32
 #define LED_PIN 3
@@ -72,13 +73,13 @@ void ledLoop()
 }
 
 uint32_t getGreen(){
-    return pixels.Color(78, 107, 84);
+    return pixels.Color(0, 107, 0);
 }
 uint32_t getLightGreen(){
     return pixels.Color(63, 97, 96);
 }
 uint32_t getBlue(){
-    return pixels.Color(0, 0, 153);
+    return pixels.Color(0, 0, 204);
 }
 uint32_t getLightBlue(){
     return pixels.Color(64, 99, 117);
@@ -90,9 +91,9 @@ uint32_t getDarkRed(){
     return pixels.Color(126, 78, 78);
 }
 uint32_t getPurple(){
-    return pixels.Color(56, 58, 95);
+    return pixels.Color(128, 0, 128);
 }
 
 uint32_t getDarkPurple(){
-    return pixels.Color(74, 60, 92);
+    return pixels.Color(76, 0, 153);
 }
