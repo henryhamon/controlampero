@@ -28,18 +28,21 @@ int getSlotCC(int button) {
 void sendToSlot(int button, bool state) {
     Serial.println("sendToSlot");
     int CC = getSlotCC(button);
-    int value = 62; // OFF
+    int value = 0; // OFF
     if (state) {
-        value = 120; // ON
+        value = 127; // ON
     }
     Serial.print("CC: "); Serial.print(CC); Serial.print(" Value: "); Serial.println(value);
     MIDI.sendControlChange(value, CC, 1);
+    delay(8);
 }
 
 void tunerOn() {
-    MIDI.sendControlChange(62, 60, 1);
+    MIDI.sendControlChange(0, 60, 1);
+    delay(8);
 }
 
 void tunerOff() {
-    MIDI.sendControlChange(120, 60, 1);
+    MIDI.sendControlChange(127, 60, 1);
+    delay(8);
 }

@@ -84,16 +84,16 @@ void tempData() {
     buttonActions[3] = 3;
     presets[4] = {"DELAY 1", 7, true, 3};
     buttonStates[4] = true;
-    buttonActions[4] = 7;
+    buttonActions[4] = 8;
     presets[5] = {"DELAY 2", 8, false, 3};
     buttonStates[5] = false;
-    buttonActions[5] = 8;
+    buttonActions[5] = 9;
     presets[6] = {"REVERB 1", 9, false, 4};
     buttonStates[6] = false;
-    buttonActions[6] = 9;
+    buttonActions[6] = 10;
     presets[7] = {"REVERB 2", 10, false, 4};
     buttonStates[7] = false;
-    buttonActions[7] = 10;
+    buttonActions[7] = 11;
 }
 
 void displayLoop() {
